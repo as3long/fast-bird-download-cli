@@ -10,13 +10,13 @@ Usage
 -----
 
 Usage: fbd-cli [options] [command]
-
+```
 Options:
   -o --output <dir>    输出文件夹
   -c --count <number>  几个链接下载,默认10
   -v, --version        输出版本号
   -h, --help           display help for command
-
+```
 Commands:
   [url]                下载地址
 
