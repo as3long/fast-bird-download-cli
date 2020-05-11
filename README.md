@@ -2,8 +2,9 @@
 分片下载命令行工具.主要使用的是 https://github.com/flicat/fast-bird-download 的代码
 
 # 安装
+```shell
 npm i -g fbd-cli
-
+```
 
 Usage
 -----
@@ -22,4 +23,6 @@ Commands:
 
 eq
 -----
-    fbd-cli -c 6 http://download.ydstatic.com/notewebsite/downloads/YoudaoNote.dmg
+```shell
+fbd-cli -c 6 http://download.ydstatic.com/notewebsite/downloads/YoudaoNote.dmg
+```
