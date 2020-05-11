@@ -18,8 +18,9 @@ Options:
   -h, --help           display help for command
 ```
 Commands:
+```
   [url]                下载地址
-
+```
 
 eq
 -----
