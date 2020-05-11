@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+
+// Shebang 指定用什么程序执行脚本
+const download = require("../src/download");
+const { program } = require('commander');
+const config = require('../package.json');
+
+program
+    .option('-o --output <dir>', '输出文件夹')
+    .option('-c --count <number>', '几个链接下载,默认10')
+    .version(config.version, '-v, --version', '输出版本号');
+
+program
+    .command('[url]', '下载地址')
+    .action((cmd, options) => {
+        // console.log(cmd);
+        // console.log(JSON.stringify(options));
+        // console.log('-c ' + program.count);
+        if (options && options.length > 0) {
+            download(
+                options,
+                program.output||"./",
+                {},
+                parseInt(program.count, 10)||10
+            ).then((successList) => {
+                console.log("download success: ", successList);
+            });
+        }
+    });
+
+program.parse(process.argv);
