@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flicat/fast-bird-download.git"
+    "url": "git+https://github.com/as3long/fast-bird-download-cli.git"
   },
   "keywords": [
     "nodejs",
@@ -20,13 +20,13 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/flicat/fast-bird-download/issues"
+    "url": "https://github.com/as3long/fast-bird-download-cli/issues"
   },
-  "homepage": "https://github.com/flicat/fast-bird-download#readme",
+  "homepage": "https://github.com/as3long/fast-bird-download-cli#readme",
   "author": {
-    "name": "flicat",
-    "email": "liyuelong1020@gmail.com",
-    "url": "https://github.com/flicat"
+    "name": "as3long",
+    "email": "as3long@qq.com",
+    "url": "https://github.com/as3long"
   },
   "dependencies": {
     "commander": "^5.1.0",
