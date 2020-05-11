@@ -1,6 +1,10 @@
 # fast-bird-download-cli
 分片下载命令行工具.主要使用的是 https://github.com/flicat/fast-bird-download 的代码
 
+# 安装
+npm i -g fbd-cli
+
+
 Usage
 -----
 

@@ -1,5 +1,5 @@
 {
-  "name": "fast-bird-download-cli",
+  "name": "fbd-cli",
   "version": "0.0.1",
   "description": "分片下载命令行工具",
   "main": "src/download.js",
