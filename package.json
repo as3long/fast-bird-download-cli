@@ -1,6 +1,6 @@
 {
   "name": "fbd-cli",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "分片下载命令行工具",
   "main": "src/download.js",
   "bin": {

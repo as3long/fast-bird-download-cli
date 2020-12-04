@@ -208,7 +208,7 @@ async function multiThreadDownload (fileBuffer, url, fileName, filePath, default
 
         try {
             let header = Object.assign({}, defaultHeaders, {
-                'etag': headers['etag'],
+                'etag': headers['etag']|| '',
                 'Content-Type': headers['content-type'],
                 'Range': 'bytes=' + start + '-' + end
             })
