@@ -145,7 +145,7 @@ async function download(url, tempPath, defaultHeaders, retryCount, start = 0, en
                 if (fileLength === readerStream.bytesWritten) {
                     resolve()
                 } else {
-                    resolve(download(url, tempPath, defaultHeaders, retryCount, start, end))
+                    throw new Error('file length error')
                 }
             })
             readerStream.on('error', (err) => {
@@ -169,9 +169,9 @@ async function download(url, tempPath, defaultHeaders, retryCount, start = 0, en
 }
 
 // 分段下载
-async function multiThreadDownload (fileBuffer, url, fileName, filePath, defaultHeaders, headers, retryCount) {
+async function multiThreadDownload (blockList, url, fileName, filePath, defaultHeaders, headers, retryCount) {
     // 生成临时文件目录
-    let downloadList = fileBuffer.map(({start, end}) => {
+    let downloadList = blockList.map(({start, end}) => {
         let tempPath = path.join(filePath, '../.download_cache/' + fileName + '/' )
         let tempFilePath = path.join(tempPath, start + '-' + end + '.tmp')
 
@@ -215,7 +215,7 @@ async function multiThreadDownload (fileBuffer, url, fileName, filePath, default
             await download(url, tempFilePath, header, retryCount, start, end)
 
             downloadedSize++
-            spinner.text = 'download ' + chalk.yellow(fileName) + '  ' + chalk.green(Math.floor(downloadedSize / fileBuffer.length * 100) + '%') + '\n';
+            spinner.text = 'download ' + chalk.yellow(fileName) + '  ' + chalk.green(Math.floor(downloadedSize / blockList.length * 100) + '%') + '\n';
         } catch (e) {
             fse.removeSync(tempFilePath)
             throw e
@@ -247,7 +247,7 @@ async function sendRequest(url, downloadDir, defaultHeaders, retryCount, count) 
     let headers = await getResHeader(url, defaultHeaders, retryCount)
     let fileName = getName(downloadDir, url.split('?')[0].split('/').pop())
     let filePath = path.join(downloadDir, fileName)
-    let fileBuffer = null
+    let blockList = null
     // 分块大小 4M
     let blockSize = 1024 * 1024 * 4;
     let fileLength = 0
@@ -258,18 +258,18 @@ async function sendRequest(url, downloadDir, defaultHeaders, retryCount, count) 
         blockSize = Math.ceil(fileLength / count);
 
         if (fileLength > blockSize) {
-            fileBuffer = splitBlock(blockSize, fileLength)
+            blockList = splitBlock(blockSize, fileLength)
         }
     }
 
-    if (!Array.isArray(fileBuffer) || !fileBuffer.length) {
-        fileBuffer = [{start: 0, end: fileLength}]
+    if (!Array.isArray(blockList) || !blockList.length) {
+        blockList = [{start: 0, end: fileLength}]
     }
 
     console.log(chalk.green(fileName + ' downloading ') + fileLength + '(' + getFileSizeStr(fileLength) + ')\n')
     try {
         // 分段下载
-        await multiThreadDownload(fileBuffer, url, fileName, filePath, defaultHeaders, headers, retryCount)
+        await multiThreadDownload(blockList, url, fileName, filePath, defaultHeaders, headers, retryCount)
 
         console.log(chalk.cyan(fileName + ' download success\n'))
     } catch (e) {

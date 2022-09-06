@@ -29,9 +29,9 @@
     "url": "https://github.com/as3long"
   },
   "dependencies": {
-    "commander": "^5.1.0",
-    "axios": "^0.19.2",
+    "axios": "^0.27.2",
     "chalk": "^3.0.0",
+    "commander": "^5.1.0",
     "fs-extra": "^8.1.0",
     "ora": "^4.0.3"
   }
