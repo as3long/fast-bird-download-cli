@@ -1,6 +1,6 @@
 {
   "name": "fbd-cli",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "分片下载命令行工具",
   "main": "src/download.js",
   "bin": {
@@ -33,6 +33,7 @@
     "chalk": "^3.0.0",
     "commander": "^5.1.0",
     "fs-extra": "^8.1.0",
-    "ora": "^4.0.3"
+    "ora": "^4.0.3",
+    "progress-stream": "^2.0.0"
   }
 }

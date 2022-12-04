@@ -6,6 +6,10 @@
 npm i -g fbd-cli
 ```
 
+## TODO
+- 增加显示下载速度
+- 下载进度优化
+
 Usage
 -----
 

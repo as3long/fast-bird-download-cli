@@ -6,6 +6,7 @@ const { program } = require('commander');
 const config = require('../package.json');
 
 program
+    .helpOption('-h,--HELP')
     .option('-o --output <dir>', '输出文件夹')
     .option('-c --count <number>', '几个链接下载,默认10')
     .version(config.version, '-v, --version', '输出版本号');
@@ -25,6 +26,8 @@ program
             ).then((successList) => {
                 console.log("download success: ", successList);
             });
+        } else {
+            console.log(program.helpInformation())
         }
     });
 

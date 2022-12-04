@@ -10,6 +10,7 @@ const chalk = require('chalk')
 const fse = require('fs-extra')
 const taskSlice = require('./taskSlice')
 const ora = require('ora')
+const progress = require('progress-stream');
 
 const spinner = ora(`downloading...\n`)
 
@@ -105,7 +106,7 @@ async function getResHeader(url, defaultHeaders, retryCount) {
 }
 
 // 下载
-async function download(url, tempPath, defaultHeaders, retryCount, start = 0, end) {
+async function download(url, tempPath, defaultHeaders, retryCount, start = 0, end, cb = ({transferred}) => {console.log(transferred)}) {
     let headers = Object.assign({
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
@@ -118,13 +119,20 @@ async function download(url, tempPath, defaultHeaders, retryCount, start = 0, en
             method: 'get',
             responseType: 'stream',
             url,
-            headers
+            headers,
         })
         let responseHeaders = formatHeaders(response.headers)
         let fileLength = Number(responseHeaders['content-length'])
 
+        var str = progress({
+            length: end-start,
+            time: 100 /* ms */
+        });
+
+        str.on('progress', cb);
+
         return new Promise((resolve, reject) => {
-            let readerStream = response.data.pipe(fs.createWriteStream(tempPath, {start: 0, flags: 'r+', autoClose: true}))
+            let readerStream = response.data.pipe(str).pipe(fs.createWriteStream(tempPath, {start: 0, flags: 'r+', autoClose: true}))
             // 等待5分钟还没下载完成则中断下载
             let timer
             let setTimer = () => {
@@ -161,7 +169,7 @@ async function download(url, tempPath, defaultHeaders, retryCount, start = 0, en
     } catch (e) {
         retryCount -= 1
         if (retryCount > 0) {
-            return download(url, tempPath, defaultHeaders, retryCount, start, end)
+            return download(url, tempPath, defaultHeaders, retryCount, start, end, cb)
         } else {
             throw e
         }
@@ -169,7 +177,7 @@ async function download(url, tempPath, defaultHeaders, retryCount, start = 0, en
 }
 
 // 分段下载
-async function multiThreadDownload (blockList, url, fileName, filePath, defaultHeaders, headers, retryCount) {
+async function multiThreadDownload (blockList, url, fileName, filePath, defaultHeaders, headers, retryCount, fileTotalLength) {
     // 生成临时文件目录
     let downloadList = blockList.map(({start, end}) => {
         let tempPath = path.join(filePath, '../.download_cache/' + fileName + '/' )
@@ -183,7 +191,7 @@ async function multiThreadDownload (blockList, url, fileName, filePath, defaultH
         }
     })
 
-    // 已下载的模块数量
+    // 已下载的文件大小
     let downloadedSize = 0
 
     await taskSlice(downloadList, 32, async ({start, end, tempFilePath, tempPath}) => {
@@ -200,7 +208,8 @@ async function multiThreadDownload (blockList, url, fileName, filePath, defaultH
                 })
             })
             if (fileLength >= end - start) {
-                downloadedSize++
+                // downloadedSize++
+                downloadedSize += fileLength;
                 return Promise.resolve()
             }
         }
@@ -212,10 +221,17 @@ async function multiThreadDownload (blockList, url, fileName, filePath, defaultH
                 'Content-Type': headers['content-type'],
                 'Range': 'bytes=' + start + '-' + end
             })
-            await download(url, tempFilePath, header, retryCount, start, end)
+            let lastLoaded = 0;
+            await download(url, tempFilePath, header, retryCount, start, end, ({transferred}) => {
+                // downloadedSize
+                let diffLoaded = transferred - lastLoaded;
+                lastLoaded = transferred;
+                downloadedSize += diffLoaded;
+                spinner.text = 'download ' + chalk.yellow(fileName) + '  ' + chalk.green(Math.floor(downloadedSize / fileTotalLength * 100) + '%') + '  '  + chalk.green(getFileSizeStr(downloadedSize)) + '\n';
+            })
 
-            downloadedSize++
-            spinner.text = 'download ' + chalk.yellow(fileName) + '  ' + chalk.green(Math.floor(downloadedSize / blockList.length * 100) + '%') + '\n';
+            // downloadedSize++
+            spinner.text = 'download ' + chalk.yellow(fileName) + '  ' + chalk.green(Math.floor(downloadedSize / fileTotalLength * 100) + '%') + '  '  + chalk.green(getFileSizeStr(downloadedSize)) + '\n';
         } catch (e) {
             fse.removeSync(tempFilePath)
             throw e
@@ -269,7 +285,7 @@ async function sendRequest(url, downloadDir, defaultHeaders, retryCount, count) 
     console.log(chalk.green(fileName + ' downloading ') + fileLength + '(' + getFileSizeStr(fileLength) + ')\n')
     try {
         // 分段下载
-        await multiThreadDownload(blockList, url, fileName, filePath, defaultHeaders, headers, retryCount)
+        await multiThreadDownload(blockList, url, fileName, filePath, defaultHeaders, headers, retryCount, fileLength)
 
         console.log(chalk.cyan(fileName + ' download success\n'))
     } catch (e) {
@@ -289,7 +305,7 @@ module.exports = async function downloadResource(urlList, downloadDir = './downl
 
     count = count < 1 ? 1 : (count > 256 ? 256 : count)
 
-    await taskSlice(urlList, 16, async (url) => {
+    await taskSlice(urlList, 1, async (url) => {
         return sendRequest(url, downloadDir, {}, retryCount, count).then(() => {
             successList.push(url)
         }).catch(e => {
