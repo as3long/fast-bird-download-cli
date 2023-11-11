@@ -29,7 +29,7 @@
     "url": "https://github.com/as3long"
   },
   "dependencies": {
-    "axios": "^0.27.2",
+    "axios": "^1.6.0",
     "chalk": "^3.0.0",
     "commander": "^5.1.0",
     "fs-extra": "^8.1.0",
